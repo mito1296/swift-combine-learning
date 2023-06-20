@@ -53,28 +53,24 @@ class UserInfoRepository {
 
 // 上記と同じことができる
 public class NeoUserInfoRepository {
+    
+    private let dataSource = UserInfoDataSource()
+    private var cancellables: Set<AnyCancellable> = []
+    
     // CurrentValueSubjectの代わりに@Publishedを使うとAnyPublisherや現在値の記述が不要になる
     // $userInfo.sinkで購読できる
     @Published private(set) var userInfo: UserInfo? = nil
     private let errorMessageSubject = PassthroughSubject<String, Never>()
     
     func fetchUserInfo(id: Int, isSuccess: Bool) {
-        if(isSuccess) {
-            // 代入するとsendされる
-            self.userInfo = userInfoDB[id]
-        } else {
-            self.errorMessageSubject.send("データ取得に失敗しました。")
-        }
+        dataSource.fetchUserData(id: id, isSuccess: isSuccess)
+            .sink() { result in
+                switch result {
+                case .success(let userInfo):
+                    self.userInfo = userInfo
+                case .failure:
+                    self.errorMessageSubject.send("データ取得に失敗しました。")
+                }
+            }.store(in: &cancellables)
     }
-    
-    // 本来はAPIやDBから取得する想定
-    private let userInfoDB = [
-        nil,
-        UserInfo(name: "chiba", age: 42),
-        UserInfo(name: "osaka", age: 20),
-        UserInfo(name: "ishikawa", age: 8),
-        nil,
-        UserInfo(name: "fukushima", age: 62),
-        UserInfo(name: "kagawa", age: 55),
-    ]
 }
