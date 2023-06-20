@@ -1,5 +1,6 @@
 import Foundation
 import Combine
+import SwiftUI
 
 let FetchUserInfoEvent = [
     (1, true),
@@ -12,7 +13,9 @@ let FetchUserInfoEvent = [
     (6, true),
     ]
 
+// SwiftUIでつかうときはViewを継承する
 public class UserInfoView {
+    // SwiftUIで使うときは@StateObjectをつける
     private var viewModel = UserInfoViewModel()
     
     public init() {}
